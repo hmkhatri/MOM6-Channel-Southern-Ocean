@@ -133,7 +133,8 @@ def calc_distribution(coordinate,function,**kwargs):
     if function=='uniform':
         distribution = kwargs["uniform_value"]*xr.ones_like(coordinate)
 
-    #if function=='tan_hyperbolic':
+    if function=='tan_hyperbolic':
+        distribution = kwargs["val_at_maxcoord"] - 0.5*(kwargs["val_at_maxcoord"]-kwargs["val_at_mincoord"])*(1 - np.tanh((coordinate - kwargs["Ys"])/kwargs["Ws"]))
 
     return distribution
 
@@ -166,44 +167,6 @@ def calc_forcing_zonaluniform(Y,function,**kwargs):
 
         condition_south = (Y>=kwargs["south_zeroregion"]) & (Y<=kwargs["northsouth_boundary"])
         forcing = (-kwargs["max_south"]*np.sin(np.pi*(Y-kwargs["south_zeroregion"])/south_width)**2).where(condition_south,0) + forcing
-
-    if function=='doublesinusoid_squared_skew':
-		# Skew function, f(x) = sin(x + sin(x)*alpha/2)**2
-		
-        domain_width = Y.max(xr.ALL_DIMS)-Y.min(xr.ALL_DIMS)
-        north_width = domain_width-kwargs["sponge_width_max"]-kwargs["northsouth_boundary"]
-        south_width = kwargs["northsouth_boundary"]-kwargs["south_zeroregion"]
-
-        condition_north = (Y>=kwargs["northsouth_boundary"]) & (Y<=domain_width-kwargs["sponge_width_max"])
-        forcing = ((kwargs["max_north"]*(np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width + 
-        np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width)*kwargs["alpha"]/2.))**2).where(condition_north,0))
-
-        condition_south = (Y>=kwargs["south_zeroregion"]) & (Y<=kwargs["northsouth_boundary"])
-        forcing = (-kwargs["max_south"]*np.sin(np.pi*(Y-kwargs["south_zeroregion"])/south_width)**2).where(condition_south,0) + forcing
-        
-    if function=='doublesinusoid_mix_skew':
-        domain_width = Y.max(xr.ALL_DIMS)-Y.min(xr.ALL_DIMS)
-        north_width = domain_width-kwargs["sponge_width_max"]-kwargs["northsouth_boundary"]
-        south_width = kwargs["northsouth_boundary"]-kwargs["south_zeroregion"]
-
-        condition_north = (Y>=kwargs["northsouth_boundary"]) & (Y<=domain_width-kwargs["sponge_width_max"])
-        forcing = ((kwargs["max_north"]*(np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width + 
-        np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width)*kwargs["alpha"]/2.))).where(condition_north,0))
-
-        condition_south = (Y>=kwargs["south_zeroregion"]) & (Y<=kwargs["northsouth_boundary"])
-        forcing = (-kwargs["max_south"]*np.sin(np.pi*(Y-kwargs["south_zeroregion"])/south_width)**2).where(condition_south,0) + forcing
-        
-    if function=='doublesinusoid_skew':
-        domain_width = Y.max(xr.ALL_DIMS)-Y.min(xr.ALL_DIMS)
-        north_width = domain_width-kwargs["sponge_width_max"]-kwargs["northsouth_boundary"]
-        south_width = kwargs["northsouth_boundary"]-kwargs["south_zeroregion"]
-
-        condition_north = (Y>=kwargs["northsouth_boundary"]) & (Y<=domain_width-kwargs["sponge_width_max"])
-        forcing = ((kwargs["max_north"]*(np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width + 
-        np.sin(np.pi*(Y-kwargs["northsouth_boundary"])/north_width)*kwargs["alpha"]/2.))).where(condition_north,0))
-
-        condition_south = (Y>=kwargs["south_zeroregion"]) & (Y<=kwargs["northsouth_boundary"])
-        forcing = (-kwargs["max_south"]*np.sin(np.pi*(Y-kwargs["south_zeroregion"])/south_width)).where(condition_south,0) + forcing
 
     if function=='doublesinusoid':
         domain_width = Y.max(xr.ALL_DIMS)-Y.min(xr.ALL_DIMS)
