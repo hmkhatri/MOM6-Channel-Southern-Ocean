@@ -1,8 +1,12 @@
 """
 
 Graeme MacGilchrist
-15/01/2020
 gmacgilchrist@gmail.com
+
+Hemant Khatri 
+hemantkhatri1091@gmail.com
+
+9/5/2020
 
 Set of functions to calculate input files for MOM6.
 
@@ -25,6 +29,22 @@ def calc_XYmeters(grid,center_x=True):
     Yval = 0.5*(Yval[:-1,:]+Yval[1:,:])
     X = xr.DataArray(Xval,dims=['lath','lonh'],coords={'lath':grid['lath'],'lonh':grid['lonh']})
     Y = xr.DataArray(Yval,dims=['lath','lonh'],coords={'lath':grid['lath'],'lonh':grid['lonh']})
+
+    if center_x:
+        X = X - X.mean(dim='lonh')
+
+    return X,Y
+
+def calc_XYmeters_gen(lat, lon, dx, dy, lat_name, lon_name, center_x=True):
+    '''Calculate the locations of each T point in [grid] in units of meters'''
+    Xval = np.append(np.zeros(shape=(lat.size,1)), dx.cumsum(lon_name).values,
+                     axis=1)
+    Yval = np.append(np.zeros(shape=(1,lon.size)), dy.cumsum(lat_name).values,
+                     axis=0)
+    Xval = 0.5*(Xval[:,:-1]+Xval[:,1:])
+    Yval = 0.5*(Yval[:-1,:]+Yval[1:,:])
+    X = xr.DataArray(Xval,coords=[("lath",lat), ("lonh",lon)])
+    Y = xr.DataArray(Yval,coords=[("lath",lat), ("lonh",lon)])
 
     if center_x:
         X = X - X.mean(dim='lonh')
@@ -109,6 +129,36 @@ def make_zeroinsponge(variable,Y,sponge_width_max):
     sponge_region = (Y>Y.max(xr.ALL_DIMS)-sponge_width_max)
     variable_new = variable.where(~sponge_region,0)
     return variable_new
+
+def make_topography(function, **kwargs):
+    
+    if function=='shelf':
+        # H = max depth, Hs = shelf depth, Y1 = lat, Ys = shelf latitude, Ws = shelf width
+        depth = - 0.5*(kwargs["H"]-kwargs["Hs"])*(1 - np.tanh((kwargs["Y1"] - kwargs["Ys"])/kwargs["Ws"]))
+        
+    if function=='ridge':
+        # Hs = ridge height, X1 = lon, Y1 = lat, Xs, Ys = ridge lan and lat, Wx, Wy = ridge length and width, theta = rotation
+        
+        a = np.cos(kwargs["theta"])**2/(2*kwargs["Wx"]**2) + np.sin(kwargs["theta"])**2/(2*kwargs["Wy"]**2);
+        b = -np.sin(2*kwargs["theta"])/(4*kwargs["Wx"]**2) + np.sin(2*kwargs["theta"])/(4*kwargs["Wy"]**2);
+        c = np.sin(kwargs["theta"])**2/(2*kwargs["Wx"]**2) + np.cos(kwargs["theta"])**2/(2*kwargs["Wy"]**2);
+
+        depth = kwargs["Hs"]*np.exp(-(a*(kwargs["X1"]-kwargs["Xs"])**2 + 2*b*(kwargs["X1"]-kwargs["Xs"])*(kwargs["Y1"]-kwargs["Ys"]) + c*(kwargs["Y1"]-kwargs["Ys"])**2));
+    
+    if function=='bump':
+        # Hs = bump height X1 = lon, Y1 = lat, Xs, Ys = bump lan and lat, Wx, Wy = bump length and width
+        # dx, dy control the rate of bump heigh decay
+        
+        x = (kwargs["X1"] - kwargs["Xs"])/kwargs["Wx"]
+        y = (kwargs["Y1"] - kwargs["Ys"])/kwargs["Wy"]
+        z = np.exp(-kwargs["dx"]/(1 - x**2) - kwargs["dy"]/(1 - y**2))
+    
+        condition = (np.abs(x) >= 1.) | (np.abs(y) >= 1.)
+        z = z.where(~condition,0)
+    
+        depth = z*kwargs["Hs"]/np.max(z)
+        
+    return depth
 
 def calc_distribution(coordinate,function,**kwargs):
     '''Calculate the distribution of a variable, based on a given coordinate
