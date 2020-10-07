@@ -118,6 +118,19 @@ def def_sponge_dampingtimescale_north(Y,sponge_width,idampval):
         idamp=idamp+xr.zeros_like(Y).where(~sponge_region,idampval[i])
     return idamp
 
+def def_sponge_damping_linear_north(Y,sponge_width,idampval_max):
+    '''Define a sponge grid at the north of the domain based on horizontal grid shape.
+    hgrid is the horizontal grid dataset
+    sponge_width is the degrees of lat to damp over and idampval is the inverse damping rate (in s-1)
+    The function prescribes a linear inverse damping rate and it decays from maximum at the northern boundary
+    to 0 at end of the sponge width region. '''
+    idamp = xr.zeros_like(Y)
+    sponge_region = Y > Y.max(xr.ALL_DIMS)-sponge_width
+    idamp = idamp + xr.zeros_like(Y).where(~sponge_region,idampval_max)
+    idamp = idamp * (Y - Y.max(xr.ALL_DIMS) + sponge_width) / sponge_width
+    
+    return idamp
+
 def def_sponge_interfaceheight(vgrid,Y):
     '''Define a 3D array of layer interface heights (eta), to which sponge will relax.'''
     eta = xr.DataArray(-vgrid['zw'],coords=[vgrid['zw']],dims='NKp1')
