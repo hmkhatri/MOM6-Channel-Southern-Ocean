@@ -7,20 +7,18 @@
 #"prog_2d",5,"days",1,"days","Time",
 "grid",-1,"days",1,"days","Time",
 
+#"prog_%4yr_%3dy",5,"days",1,"days","Time",3650,"days"
+# This command will produce output files , e.g. "prog_2000_001.nc" , with an output frequency of 5 days . The time axis units will be in units of days. New files are created every 3650 days in this example.
+
 # Field section:
 #=========================
 
-"ocean_model",	"u",		"u",		"prog",		"all", .false.,"none",2
-"ocean_model",	"v",		"v",		"prog",		"all", .false.,"none",2
-#"ocean_model",	"PV",		"PV",		"prog",		"all", .false.,"none",2
-"ocean_model",	"temp",		"temp",		"prog",		"all", .false.,"none",2
-#"ocean_model",	"salt",		"salt",		"prog",		"all", .false.,"none",2
-"ocean_model",	"RV",		"RV",		"prog",		"all", .false.,"none",2
-"ocean_model",	"rhopot2",	"rhopot2",	"prog",		"all", .false.,"none",2
-"ocean_model",	"e",		"e",		"prog",		"all", .false.,"none",2
 "ocean_model",	"SSH",		"SSH",		"prog",		"all", .false.,"none",2
-#"ocean_model",	"heat_added",	"heat_added",	"prog_2d",	"all","none","none",2
-#"ocean_model","obvfsq","obvfsq","prog","all",.false.,"none",2
+"ocean_model", "heat_added",   "heat_added",   "prog_2d",      "all","none","none",2
+"ocean_model",  "thetaoga",          "thetaoga",          "prog",         "all", .true.,"none",2
+"ocean_model",  "soga",          "soga",          "prog",         "all", .true.,"none",2
+"ocean_model",  "PRCmE",          "PRCmE",          "prog",         "all", .true.,"none",2
+"ocean_model",  "net_heat_surface",          "net_heat_surface",          "prog",         "all", .true.,"none",2
 
 # Z output:
 #===============================
@@ -30,8 +28,20 @@
 "ocean_model_z","v","v","prog_z","all",.true.,"none",2
 "ocean_model_z","umo","umo","prog_z","all",.true.,"none",2
 "ocean_model_z","vmo","vmo","prog_z","all",.true.,"none",2
+"ocean_model_z","rhopot0","rhopot0","prog_z","all",.true.,"none",2
 #"ocean_model_z","obvfsq","obvfsq","prog_z","all",.false.,"none",2
 
+# Rho output:
+# #==============================
+"ocean_model_rho2","temp","temp","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","salt","salt","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","u","u","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","v","v","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","umo","umo","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","vmo","vmo","prog_rho2","all",.true.,"none",2
+#"ocean_model_rho2","e","e","prog_rho2","all",.true.,"none",2
+"ocean_model_rho2","h","h","prog_rho2","all",.true.,"none",2
+ 
 # Grid Info:
 #===========================
 "ocean_model", "geolon",      "geolon",      "grid", "all", .false., "none", 2
